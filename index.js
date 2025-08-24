@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const {program} = require('commander');
+const { program } = require('commander');
 const fs = require('fs-extra');
 const path = require('path');
 const clipboardy = require('clipboardy');
@@ -55,27 +55,49 @@ program
             const templatePath = path.join(templateDir, `template${ext}`);
             
             console.log(chalk.blue(`Setting template for ${ext} extension...`));
-            console.log(chalk.gray('Please paste your template code and press Ctrl+D (Unix) or Ctrl+Z (Windows) when done:'));
+            console.log(chalk.gray('Please paste your template code and press .end to finish:'));
             
-            // Read from stdin
+            // Read from stdin with Windows-compatible approach
             let template = '';
-            process.stdin.setEncoding('utf8');
-            process.stdin.on('data', (chunk) => {
-                template += chunk;
-            });
             
-            process.stdin.on('end', async () => {
+            process.stdin.setEncoding('utf8');
+            process.stdin.setRawMode(false);
+            
+            const onData = (chunk) => {
+                const data = chunk.toString();
+                
+                // Check for double empty line (Enter twice) to end input
+                if (data.trim() === ".end") {
+                    process.stdin.removeListener('data', onData);
+                    process.stdin.pause();
+                    saveTemplate();
+                } else {
+                    template += data;
+                }
+            };
+            
+            const saveTemplate = async () => {
                 try {
-                    await fs.writeFile(templatePath, template.trim());
+                    // Remove trailing newlines and save
+                    const cleanTemplate = template.trim();
+                    await fs.writeFile(templatePath, cleanTemplate);
                     console.log(chalk.green(`✓ Template for ${ext} saved successfully`));
                     process.exit(0);
                 } catch (error) {
                     console.error(chalk.red(`Error saving template: ${error.message}`));
                     process.exit(1);
                 }
+            };
+            
+            process.stdin.on('data', onData);
+            process.stdin.resume();
+            
+            // Alternative: Listen for Ctrl+C to cancel
+            process.on('SIGINT', () => {
+                console.log(chalk.yellow('\nTemplate creation cancelled.'));
+                process.exit(0);
             });
             
-            process.stdin.resume();
         } catch (error) {
             console.error(chalk.red(`Error setting template: ${error.message}`));
         }
