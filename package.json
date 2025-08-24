@@ -3,12 +3,14 @@
   "version": "1.0.0",
   "description": "A CLI tool for competitive programmers to quickly create, execute, and copy files",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "gen": "node index.js gen test.cpp",
     "run": "node index.js run test.cpp",
     "wind": "node index.js wind",
-    "set": "node index.js set .cpp"
+    "set": "node index.js set .cpp",
+    "status": "node index.js status"
   },
   "bin": {
     "nms": "./index.js"
