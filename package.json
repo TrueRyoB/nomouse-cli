@@ -1,6 +1,6 @@
 {
   "name": "nomouse-cli",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A CLI tool for competitive programmers to quickly create, execute, and copy files",
   "main": "index.js",
   "type": "module",
