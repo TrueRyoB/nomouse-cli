@@ -14,7 +14,7 @@
     "status": "node index.js status"
   },
   "bin": {
-    "nms": "./index.js"
+    "nms": "index.js"
   },
   "dependencies": {
     "commander": "^13.1.0",
