@@ -1,20 +1,44 @@
 #!/usr/bin/env node
 
-const { program } = require('commander');
-const fs = require('fs-extra');
-const path = require('path');
-const clipboardy = require('clipboardy');
-const chalk = require('chalk');
-const { spawnSync } = require('child_process');
+import { program } from 'commander';
+import fs from 'fs-extra';
+import path from 'path';
+import clipboardy from 'clipboardy';
+import chalk from 'chalk';
+import { spawnSync } from 'child_process';
 
-// Store the last generated/run file path
-let lastFile = null;
+// Persistent storage paths
+const storageDir = path.join(process.cwd(), '.nomouse-data');
+const templatesDir = path.join(storageDir, 'templates');
+const stateFile = path.join(storageDir, 'state.json');
 
-// Template directory path
-const templateDir = path.join(process.cwd(), '.nomouse-templates');
+// Ensure storage directories exist
+fs.ensureDirSync(storageDir);
+fs.ensureDirSync(templatesDir);
 
-// Ensure template directory exists
-fs.ensureDirSync(templateDir);
+// Load persistent state
+function loadState() {
+    try {
+        if (fs.existsSync(stateFile)) {
+            return fs.readJsonSync(stateFile);
+        }
+    } catch (error) {
+        console.log(chalk.yellow('Warning: Could not load previous state, starting fresh.'));
+    }
+    return { lastFile: null, lastGenerated: null, lastRun: null, stats: { generated: 0, run: 0 } };
+}
+
+// Save persistent state
+function saveState(state) {
+    try {
+        fs.writeJsonSync(stateFile, state, { spaces: 2 });
+    } catch (error) {
+        console.error(chalk.red(`Error saving state: ${error.message}`));
+    }
+}
+
+// Get current state
+let state = loadState();
 
 // Set program metadata
 program
@@ -29,7 +53,7 @@ program
     .action(async (filename) => {
         try {
             const ext = path.extname(filename);
-            const templatePath = path.join(templateDir, `template${ext}`);
+            const templatePath = path.join(templatesDir, `template${ext}`);
             
             if (!await fs.pathExists(templatePath)) {
                 console.log(chalk.yellow(`No template found for ${ext} extension. Use 'nms set ${ext}' to create one.`));
@@ -39,7 +63,10 @@ program
             const template = await fs.readFile(templatePath, 'utf8');
             await fs.writeFile(filename, template);
             
-            lastFile = filename;
+            state.lastGenerated = filename;
+            state.stats.generated++;
+            saveState(state);
+            
             console.log(chalk.green(`✓ Generated ${filename} from template`));
         } catch (error) {
             console.error(chalk.red(`Error generating file: ${error.message}`));
@@ -53,7 +80,7 @@ program
     .action(async (extension) => {
         try {
             const ext = extension.startsWith('.') ? extension : `.${extension}`;
-            const templatePath = path.join(templateDir, `template${ext}`);
+            const templatePath = path.join(templatesDir, `template${ext}`);
             
             console.log(chalk.blue(`Setting template for ${ext} extension...`));
             console.log(chalk.gray('Please paste your template code and press .end to finish:'));
@@ -115,7 +142,10 @@ program
                 return;
             }
             
-            lastFile = filename;
+            state.lastRun = filename;
+            state.stats.run++;
+            saveState(state);
+            
             const ext = path.extname(filename);
             
             console.log(chalk.blue(`Running ${filename}...`));
@@ -124,34 +154,101 @@ program
             switch (ext) {
                 case '.js':
                     console.log(chalk.gray('Running JavaScript file...'));
-                    require('child_process').execSync(`node ${filename}`, { stdio: 'inherit' });
+                    const jsResult = spawnSync(`node`, [filename], { 
+                        stdio: 'inherit',
+                        shell: true 
+                    });
+                    
+                    if (jsResult.status !== 0) {
+                        console.error(chalk.red(`✗ JavaScript execution failed with exit code ${jsResult.status}`));
+                        return;
+                    }
                     break;
                 case '.py':
                     console.log(chalk.gray('Running Python file...'));
-                    require('child_process').execSync(`python ${filename}`, { stdio: 'inherit' });
+                    const pyResult = spawnSync(`python`, [filename], { 
+                        stdio: 'inherit',
+                        shell: true 
+                    });
+                    
+                    if (pyResult.status !== 0) {
+                        console.error(chalk.red(`✗ Python execution failed with exit code ${pyResult.status}`));
+                        return;
+                    }
                     break;
                 case '.cpp':
                 case '.cc':
                 case '.cxx':
                     console.log(chalk.gray('Compiling C++ file...'));
                     const outputName = filename.replace(ext, '');
-                    spawnSync(`g++ -o ${outputName} ${filename}`, { stdio: 'inherit' });
+                    const compileResult = spawnSync(`g++`, ['-o', outputName, filename], { 
+                        stdio: 'inherit',
+                        shell: true 
+                    });
+                    
+                    if (compileResult.status !== 0) {
+                        console.error(chalk.red(`✗ Compilation failed with exit code ${compileResult.status}`));
+                        return;
+                    }
+                    
                     console.log(chalk.gray('Running compiled file...'));
-                    spawnSync(`./${outputName}`, { stdio: 'inherit' });
+                    const runResult = spawnSync(outputName, { 
+                        stdio: 'inherit',
+                        shell: true 
+                    });
+                    
+                    if (runResult.status !== 0) {
+                        console.error(chalk.red(`✗ Program exited with code ${runResult.status}`));
+                        return;
+                    }
                     break;
                 case '.c':
                     console.log(chalk.gray('Compiling C file...'));
                     const cOutputName = filename.replace(ext, '');
-                    require('child_process').execSync(`gcc -o ${cOutputName} ${filename}`, { stdio: 'inherit' });
+                    const cCompileResult = spawnSync(`gcc`, ['-o', cOutputName, filename], { 
+                        stdio: 'inherit',
+                        shell: true 
+                    });
+                    
+                    if (cCompileResult.status !== 0) {
+                        console.error(chalk.red(`✗ Compilation failed with exit code ${cCompileResult.status}`));
+                        return;
+                    }
+                    
                     console.log(chalk.gray('Running compiled file...'));
-                    require('child_process').execSync(`./${cOutputName}`, { stdio: 'inherit' });
+                    const cRunResult = spawnSync(`./${cOutputName}`, { 
+                        stdio: 'inherit',
+                        shell: true 
+                    });
+                    
+                    if (cRunResult.status !== 0) {
+                        console.error(chalk.red(`✗ Program exited with code ${cRunResult.status}`));
+                        return;
+                    }
                     break;
                 case '.java':
                     console.log(chalk.gray('Compiling Java file...'));
                     const className = path.basename(filename, ext);
-                    require('child_process').execSync(`javac ${filename}`, { stdio: 'inherit' });
+                    const javaCompileResult = spawnSync(`javac`, [filename], { 
+                        stdio: 'inherit',
+                        shell: true 
+                    });
+                    
+                    if (javaCompileResult.status !== 0) {
+                        console.error(chalk.red(`✗ Compilation failed with exit code ${javaCompileResult.status}`));
+                        return;
+                    }
+                    
                     console.log(chalk.gray('Running Java file...'));
-                    require('child_process').execSync(`java ${className}`, { stdio: 'inherit' });
+                    const javaRunResult = spawnSync(`java`, [className], { 
+                        stdio: 'inherit',
+                        shell: true 
+                    });
+                    
+                    if (javaRunResult.status !== 0) {
+                        console.error(chalk.red(`✗ Program exited with code ${javaRunResult.status}`));
+                        return;
+                    }
                     break;
                 default:
                     console.log(chalk.yellow(`No specific test handler for ${ext} files. File exists and is ready.`));
@@ -169,24 +266,70 @@ program
     .description('Copy source code of the last generated/run file using nomouse')
     .action(async () => {
         try {
-            if (!lastFile) {
+            if (!state.lastRun && !state.lastGenerated) {
                 console.log(chalk.yellow('No file has been generated or run yet. Use "nms gen" or "nms run" first.'));
                 return;
             }
             
-            if (!await fs.pathExists(lastFile)) {
-                console.error(chalk.red(`Last file ${lastFile} no longer exists`));
+            // Prefer last run file, fallback to last generated
+            const targetFile = state.lastRun || state.lastGenerated;
+            
+            if (!await fs.pathExists(targetFile)) {
+                console.error(chalk.red(`Last file ${targetFile} no longer exists`));
                 return;
             }
             
-            const content = await fs.readFile(lastFile, 'utf8');
-            await clipboardy.write(content);
+            const content = await fs.readFile(targetFile, 'utf8');
+            clipboardy.writeSync(content);
             
-            console.log(chalk.green(`✓ Copied ${lastFile} content to clipboard`));
-            console.log(chalk.gray(`File: ${lastFile}`));
+            console.log(chalk.green(`✓ Copied ${targetFile} content to clipboard`));
+            console.log(chalk.gray(`File: ${targetFile}`));
             console.log(chalk.gray(`Size: ${content.length} characters`));
         } catch (error) {
             console.error(chalk.red(`Error copying file: ${error.message}`));
+        }
+    });
+
+// Status command
+program
+    .command('status')
+    .description('Show current CLI status and statistics')
+    .action(async () => {
+        try {
+            console.log(chalk.blue('📊 Nomouse CLI Status'));
+            console.log(chalk.gray('─'.repeat(40)));
+            
+            if (state.lastGenerated) {
+                console.log(chalk.green(`📁 Last Generated: ${state.lastGenerated}`));
+            } else {
+                console.log(chalk.yellow('📁 Last Generated: None'));
+            }
+            
+            if (state.lastRun) {
+                console.log(chalk.green(`▶️  Last Run: ${state.lastRun}`));
+            } else {
+                console.log(chalk.yellow('▶️  Last Run: None'));
+            }
+            
+            console.log(chalk.blue(`📈 Statistics:`));
+            console.log(chalk.gray(`   Generated: ${state.stats.generated} files`));
+            console.log(chalk.gray(`   Run: ${state.stats.run} files`));
+            
+            // Show available templates
+            const templates = await fs.readdir(templatesDir);
+            if (templates.length > 0) {
+                console.log(chalk.blue(`📋 Available Templates:`));
+                templates.forEach(template => {
+                    const ext = template.replace('template', '');
+                    console.log(chalk.gray(`   ${ext}`));
+                });
+            } else {
+                console.log(chalk.yellow('📋 No templates set yet. Use "nms set <extension>" to create one.'));
+            }
+            
+            console.log(chalk.gray('─'.repeat(40)));
+        } catch (error) {
+            console.error(chalk.red(`Error showing status: ${error.message}`));
         }
     });
 
