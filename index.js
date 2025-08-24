@@ -5,8 +5,9 @@ const fs = require('fs-extra');
 const path = require('path');
 const clipboardy = require('clipboardy');
 const chalk = require('chalk');
+const { spawnSync } = require('child_process');
 
-// Store the last generated/tested file path
+// Store the last generated/run file path
 let lastFile = null;
 
 // Template directory path
@@ -103,9 +104,9 @@ program
         }
     });
 
-// Test command
+// Run command
 program
-    .command('test <filename>')
+    .command('run <filename>')
     .description('Compiles and runs a file')
     .action(async (filename) => {
         try {
@@ -117,7 +118,7 @@ program
             lastFile = filename;
             const ext = path.extname(filename);
             
-            console.log(chalk.blue(`Testing ${filename}...`));
+            console.log(chalk.blue(`Running ${filename}...`));
             
             // Handle different file types
             switch (ext) {
@@ -134,9 +135,9 @@ program
                 case '.cxx':
                     console.log(chalk.gray('Compiling C++ file...'));
                     const outputName = filename.replace(ext, '');
-                    require('child_process').execSync(`g++ -o ${outputName} ${filename}`, { stdio: 'inherit' });
+                    spawnSync(`g++ -o ${outputName} ${filename}`, { stdio: 'inherit' });
                     console.log(chalk.gray('Running compiled file...'));
-                    require('child_process').execSync(`./${outputName}`, { stdio: 'inherit' });
+                    spawnSync(`./${outputName}`, { stdio: 'inherit' });
                     break;
                 case '.c':
                     console.log(chalk.gray('Compiling C file...'));
@@ -156,20 +157,20 @@ program
                     console.log(chalk.yellow(`No specific test handler for ${ext} files. File exists and is ready.`));
             }
             
-            console.log(chalk.green(`✓ Test completed for ${filename}`));
+            console.log(chalk.green(`✓ Run completed for ${filename}`));
         } catch (error) {
-            console.error(chalk.red(`Error testing file: ${error.message}`));
+            console.error(chalk.red(`Error running file: ${error.message}`));
         }
     });
 
 // Wind command
 program
     .command('wind')
-    .description('Copy source code of the last generated/tested file using nomouse')
+    .description('Copy source code of the last generated/run file using nomouse')
     .action(async () => {
         try {
             if (!lastFile) {
-                console.log(chalk.yellow('No file has been generated or tested yet. Use "nms gen" or "nms test" first.'));
+                console.log(chalk.yellow('No file has been generated or run yet. Use "nms gen" or "nms run" first.'));
                 return;
             }
             

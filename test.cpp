@@ -1,13 +1,14 @@
 #include <bits/stdc++.h>
-#include <atcoder/all>
+// #include <atcoder/all>
 using namespace std;
-using namespace atcoder;
+// using namespace atcoder;
 #define int long long
 
 int32_t main() {
     ios::sync_with_stdio(false);
 	cin.tie(nullptr);
     
+    cout << "Hello, World!" << endl;
 
     return 0;
 }

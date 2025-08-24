@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node index.js",
     "gen": "node index.js gen test.cpp",
-    "test": "node index.js test test.cpp",
+    "run": "node index.js run test.cpp",
     "wind": "node index.js wind",
     "set": "node index.js set .cpp"
   },

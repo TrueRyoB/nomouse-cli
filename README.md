@@ -2,20 +2,20 @@
 競技プログラマのようなファイルの作成・実行・コピーを迅速に行う必要がある方に向けたCLIサービスです。
 
 ## Commands
+**Gen**:テンプレートに則した新しいファイルを作成
 ~~~
-//テンプレートに則した新しいファイルを作成
 nms gen $filename.extension
 ~~~
+**Set**:拡張子に応じたテンプレートを設定
 ~~~
-//拡張子に応じたテンプレートを設定
 nms set $extension
 ~~~
+**Run**:コンパイルして実行
 ~~~
-//コンパイルして実行する
-nms test $filename
+nms run $filename.extension
 ~~~
+**Wind**:最後にnomouse-cliを通じて作成/実行されたファイルのコードをclipboardに保存
 ~~~
-//最後にnmsを通じて作成若しくはテスト実行されたファイルの中身をコピーする 
 nms wind
 ~~~
 
