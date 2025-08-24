@@ -19,6 +19,10 @@ nms run $filename.extension
 ~~~
 nms wind
 ~~~
+**Status**: Nomouse CLIの使用状況を表示
+~~~
+nms status
+~~~
 
 
 ## ライセンス
