@@ -5,6 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "test": "node index.js gen test.cpp && node index.js run test.cpp && node index.js wind",
     "start": "node index.js",
     "gen": "node index.js gen test.cpp",
     "run": "node index.js run test.cpp",
