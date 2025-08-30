@@ -42,7 +42,7 @@ let state = loadState();
 
 // Set program metadata
 program
-    .name('nms')
+    .name('nyn')
     .description('A CLI tool for competitive programmers to quickly create, execute, and copy files')
     .version('1.0.0');
 
@@ -56,7 +56,7 @@ program
             const templatePath = path.join(templatesDir, `template${ext}`);
             
             if (!await fs.pathExists(templatePath)) {
-                console.log(chalk.yellow(`No template found for ${ext} extension. Use 'nms set ${ext}' to create one.`));
+                console.log(chalk.yellow(`No template found for ${ext} extension. Use 'nyn set ${ext}' to create one.`));
                 return;
             }
             
@@ -267,7 +267,7 @@ program
     .action(async () => {
         try {
             if (!state.lastRun && !state.lastGenerated) {
-                console.log(chalk.yellow('No file has been generated or run yet. Use "nms gen" or "nms run" first.'));
+                console.log(chalk.yellow('No file has been generated or run yet. Use "nyn gen" or "nyn run" first.'));
                 return;
             }
             
@@ -324,7 +324,7 @@ program
                     console.log(chalk.gray(`   ${ext}`));
                 });
             } else {
-                console.log(chalk.yellow('📋 No templates set yet. Use "nms set <extension>" to create one.'));
+                console.log(chalk.yellow('📋 No templates set yet. Use "nyn set <extension>" to create one.'));
             }
             
             console.log(chalk.gray('─'.repeat(40)));
