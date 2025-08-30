@@ -40,11 +40,14 @@ function saveState(state) {
 // Get current state
 let state = loadState();
 
+// Read package.json for metadata
+const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package.json'), 'utf8'));
+
 // Set program metadata
 program
     .name('nyn')
     .description('A CLI tool for competitive programmers to quickly create, execute, and copy files')
-    .version('1.0.0');
+    .version(packageJson.version, '-v, --version');
 
 // Generate command
 program
