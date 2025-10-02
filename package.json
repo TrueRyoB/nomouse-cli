@@ -12,6 +12,9 @@
     "wind": "node index.js wind",
     "set": "node index.js set .cpp",
     "status": "node index.js status",
+    "stop": "node index.js stop",
+    "restart": "node index.js restart",
+    "clear": "node index.js clear",
     "version": "node index.js -v"
   },
   "bin": {

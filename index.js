@@ -2,13 +2,14 @@
 
 import { program } from 'commander';
 import fs from 'fs-extra';
-import path from 'path';
+import path from "path";
+import envPaths from "env-paths";
 import clipboardy from 'clipboardy';
 import chalk from 'chalk';
 import { spawnSync } from 'child_process';
 
 // Persistent storage paths
-const storageDir = path.join(process.cwd(), '.nomouse-data');
+const storageDir = envPaths("nomouse").data;
 const templatesDir = path.join(storageDir, 'templates');
 const stateFile = path.join(storageDir, 'state.json');
 
@@ -45,7 +46,7 @@ const packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), 'package
 
 // Set program metadata
 program
-    .name('nyn')
+    .name('nms')
     .description('A CLI tool for competitive programmers to quickly create, execute, and copy files')
     .version(packageJson.version, '-v, --version');
 
@@ -59,7 +60,7 @@ program
             const templatePath = path.join(templatesDir, `template${ext}`);
             
             if (!await fs.pathExists(templatePath)) {
-                console.log(chalk.yellow(`No template found for ${ext} extension. Use 'nyn set ${ext}' to create one.`));
+                console.log(chalk.yellow(`No template found for ${ext} extension. Use 'nms set ${ext}' to create one.`));
                 return;
             }
             
@@ -270,7 +271,7 @@ program
     .action(async () => {
         try {
             if (!state.lastRun && !state.lastGenerated) {
-                console.log(chalk.yellow('No file has been generated or run yet. Use "nyn gen" or "nyn run" first.'));
+                console.log(chalk.yellow('No file has been generated or run yet. Use "nms gen" or "nms run" first.'));
                 return;
             }
             
@@ -327,13 +328,22 @@ program
                     console.log(chalk.gray(`   ${ext}`));
                 });
             } else {
-                console.log(chalk.yellow('📋 No templates set yet. Use "nyn set <extension>" to create one.'));
+                console.log(chalk.yellow('📋 No templates set yet. Use "nms set <extension>" to create one.'));
             }
             
             console.log(chalk.gray('─'.repeat(40)));
         } catch (error) {
             console.error(chalk.red(`Error showing status: ${error.message}`));
         }
+    });
+
+// Clear command
+program
+    .command('clear')
+    .description('Clear logs and messages from a command-line interface')
+    .action(async () => {
+        const cmd = process.platform === "win32" ? "cls" : "clear";
+        spawnSync(cmd, { stdio: "inherit", shell:true })
     });
 
 // Parse command line arguments
