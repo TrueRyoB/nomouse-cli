@@ -1,7 +1,7 @@
 # [Nomouse CLI](https://github.com/TrueRyoB/nomouse-cli)
 ファイルの作成・実行・コピーを迅速に抽象化したCLIです。<br>
 ~~~:node.jsを利用することでインストールが可能です。
-npm -i nomouse-cli
+npm i nomouse-cli
 ~~~
 
 ## コマンド
