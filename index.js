@@ -11,11 +11,13 @@ import { spawnSync } from 'child_process';
 // Persistent storage paths
 const storageDir = envPaths("nomouse").data;
 const templatesDir = path.join(storageDir, 'templates');
+const exeDir = path.join(storageDir, 'exe');
 const stateFile = path.join(storageDir, 'state.json');
 
 // Ensure storage directories exist
 fs.ensureDirSync(storageDir);
 fs.ensureDirSync(templatesDir);
+fs.ensureDirSync(exeDir);
 
 // Load persistent state
 function loadState() {
@@ -274,7 +276,8 @@ program
                 case '.cc':
                 case '.cxx':
                     console.log(chalk.gray('Compiling C++ file...'));
-                    const outputName = filename.replace(ext, '');
+                    const baseName = path.basename(filename, ext);
+                    const outputName = path.join(exeDir, baseName);
                     const compileResult = spawnSync(`g++`, ['-o', outputName, filename], { 
                         stdio: 'inherit',
                         shell: true 
@@ -298,7 +301,8 @@ program
                     break;
                 case '.c':
                     console.log(chalk.gray('Compiling C file...'));
-                    const cOutputName = filename.replace(ext, '');
+                    const cBaseName = path.basename(filename, ext);
+                    const cOutputName = path.join(exeDir, cBaseName);
                     const cCompileResult = spawnSync(`gcc`, ['-o', cOutputName, filename], { 
                         stdio: 'inherit',
                         shell: true 
@@ -310,10 +314,9 @@ program
                     }
                     
                     console.log(chalk.gray('Running compiled file...'));
-                    const cRunResult = spawnSync(`./${cOutputName}`, { 
-                        stdio: 'pipe',
+                    const cRunResult = spawnSync(cOutputName, { 
+                        stdio: 'inherit',
                         shell: true,
-                        encoding: 'utf8'
                     });
                     
                     if (cRunResult.status !== 0) {
