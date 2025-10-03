@@ -238,45 +238,25 @@ program
                 case '.js':
                     console.log(chalk.gray('Running JavaScript file...'));
                     const jsResult = spawnSync(`node`, [filename], { 
-                        stdio: 'pipe',
-                        shell: true,
-                        encoding: 'utf8'
+                        stdio: 'inherit',
+                        shell: true 
                     });
                     
                     if (jsResult.status !== 0) {
                         console.error(chalk.red(`✗ JavaScript execution failed with exit code ${jsResult.status}`));
-                        if (jsResult.stderr) {
-                            console.error(chalk.red(jsResult.stderr));
-                        }
                         return;
-                    }
-                    
-                    // Colorize output
-                    if (jsResult.stdout) {
-                        console.log(chalk.cyan('Output:'));
-                        console.log(chalk.white(jsResult.stdout));
                     }
                     break;
                 case '.py':
                     console.log(chalk.gray('Running Python file...'));
                     const pyResult = spawnSync(`python`, [filename], { 
-                        stdio: 'pipe',
-                        shell: true,
-                        encoding: 'utf8'
+                        stdio: 'inherit',
+                        shell: true 
                     });
                     
                     if (pyResult.status !== 0) {
                         console.error(chalk.red(`✗ Python execution failed with exit code ${pyResult.status}`));
-                        if (pyResult.stderr) {
-                            console.error(chalk.red(pyResult.stderr));
-                        }
                         return;
-                    }
-                    
-                    // Colorize output
-                    if (pyResult.stdout) {
-                        console.log(chalk.cyan('Output:'));
-                        console.log(chalk.white(pyResult.stdout));
                     }
                     break;
                 case '.cpp':
@@ -296,23 +276,13 @@ program
                     
                     console.log(chalk.gray('Running compiled file...'));
                     const runResult = spawnSync(outputName, { 
-                        stdio: 'pipe',
-                        shell: true,
-                        encoding: 'utf8'
+                        stdio: 'inherit',
+                        shell: true 
                     });
                     
                     if (runResult.status !== 0) {
                         console.error(chalk.red(`✗ Program exited with code ${runResult.status}`));
-                        if (runResult.stderr) {
-                            console.error(chalk.red(runResult.stderr));
-                        }
                         return;
-                    }
-                    
-                    // Colorize output
-                    if (runResult.stdout) {
-                        console.log(chalk.cyan('Output:'));
-                        console.log(chalk.white(runResult.stdout));
                     }
                     break;
                 case '.c':
