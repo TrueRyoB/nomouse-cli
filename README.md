@@ -21,6 +21,14 @@ nms run $filename.$extension
 ~~~
 nms wind
 ~~~
+**Pause**: 最後に使用したファイルのタイマーを停止
+~~~
+nms pause
+~~~
+**Resume**: 止めたタイマーを再開
+~~~
+nms resume
+~~~
 **Status**: Nomouse CLIの使用状況を表示
 ~~~
 nms status
