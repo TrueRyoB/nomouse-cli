@@ -12,8 +12,8 @@
     "wind": "node index.js wind",
     "set": "node index.js set .cpp",
     "status": "node index.js status",
-    "stop": "node index.js stop",
-    "restart": "node index.js restart",
+    "pause": "node index.js pause",
+    "resume": "node index.js resume",
     "clear": "node index.js clear",
     "version": "node index.js -v"
   },
@@ -21,10 +21,11 @@
     "nms": "index.js"
   },
   "dependencies": {
-    "commander": "^13.1.0",
-    "fs-extra": "^11.2.0",
+    "chalk": "^4.1.2",
     "clipboardy": "^3.0.0",
-    "chalk": "^4.1.2"
+    "commander": "^13.1.0",
+    "env-paths": "^3.0.0",
+    "fs-extra": "^11.2.0"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
