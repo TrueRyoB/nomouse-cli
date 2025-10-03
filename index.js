@@ -164,6 +164,17 @@ program
         try {
             const ext = extension.startsWith('.') ? extension : `.${extension}`;
             const templatePath = path.join(templatesDir, `template${ext}`);
+
+            if (await fs.pathExists(templatePath)) {
+                try {
+                    const content = await fs.readFile(templatePath, 'utf8');
+                    clipboardy.writeSync(content);
+                    console.log(chalk.yellow('The existing template is copied to your clipboard. Overwriting...'));
+                }
+                catch (error) {
+                    console.error(chalk.red(`Error copying template: ${error.message}`));
+                }
+            }
             
             console.log(chalk.blue(`Setting template for ${ext} extension...`));
             console.log(chalk.gray('Please paste your template code and press .end to finish:'));
