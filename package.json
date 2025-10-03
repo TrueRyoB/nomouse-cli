@@ -40,7 +40,7 @@
   "author": "TrueRyoB",
   "repository": {
     "type": "git",
-    "url": "https://github.com/TrueRyoB/nomouse-cli"
+    "url": "git+https://github.com/TrueRyoB/nomouse-cli.git"
   },
   "license": "MIT"
 }
