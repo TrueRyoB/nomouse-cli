@@ -14,10 +14,8 @@ const templatesDir = path.join(storageDir, 'templates');
 const exeDir = path.join(storageDir, 'exe');
 const stateFile = path.join(storageDir, 'state.json');
 
-// Ensure storage directories exist
-fs.ensureDirSync(storageDir);
-fs.ensureDirSync(templatesDir);
-fs.ensureDirSync(exeDir);
+// console.log("debug root dir: ", storageDir);
+for(const dir of [storageDir, templatesDir, exeDir]) fs.ensureDirSync(dir);
 
 // Load persistent state
 function loadState() {
@@ -278,7 +276,7 @@ program
                     console.log(chalk.gray('Compiling C++ file...'));
                     const baseName = path.basename(filename, ext);
                     const outputName = path.join(exeDir, baseName);
-                    const compileResult = spawnSync(`g++`, ['-o', outputName, filename], { 
+                    const compileResult = spawnSync(`g++`, ['-std=gnu++20', '-o', outputName, filename], { 
                         stdio: 'inherit',
                         shell: true 
                     });
