@@ -276,7 +276,7 @@ program
           console.log(chalk.gray('Compiling C++ file...'));
           const baseName = path.basename(filename, ext);
           const outputName = path.join(exeDir, baseName);
-          const compileResult = spawnSync(`g++`, ['-std=gnu++20', '-o', outputName, filename], {
+          const compileResult = spawnSync(`g++`, ['-std=gnu++20', '-DLOCAL', filename, '-o', outputName], {
             stdio: 'inherit',
             shell: true
           });
